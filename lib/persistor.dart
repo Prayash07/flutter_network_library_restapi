@@ -12,25 +12,25 @@ part 'persistor.g.dart';
 @HiveType()
 class Response {
   @HiveField(0)
-  String rawData;
+  String? rawData;
 
   @HiveField(1)
-  DateTime timeStamp;
+  DateTime? timeStamp;
 
   @HiveField(2)
   dynamic data;
 
   @HiveField(3)
-  Map<String,dynamic> error;
+  Map<String,dynamic>? error;
 
   @HiveField(4)
-  bool fetching;
+  bool? fetching;
 
   @HiveField(5)
-  bool success;
+  bool? success;
 
   @HiveField(6)
-  int statusCode;
+  int? statusCode;
 
   Response({
     this.success = false,
@@ -65,7 +65,7 @@ class Response {
 
   getValidationErrorFor(String key){
     try{
-      return error['validation_errors'][key][0];
+      return error!['validation_errors'][key][0];
     }catch(e){
       return null;
     }
@@ -82,7 +82,7 @@ class Response {
 
 class Persistor{
 
-   Box box;
+   Box? box;
   static bool initialized = false;
 
   static Future<void> initialize({String databaseName = 'store3.db'}) async {
@@ -130,7 +130,7 @@ class Persistor{
   
   }
 
-  Box getBox(){
+  Box? getBox(){
     return box;
   }
 
@@ -149,7 +149,7 @@ class Persistor{
   }
 
   init(String key){
-    Response result = box.get(key,defaultValue: Response());
+    Response result = box!.get(key,defaultValue: Response());
 
     result.fetching = false;
     result.error = {};
@@ -158,7 +158,7 @@ class Persistor{
   }
 
   start(String key){
-    Response result = box.get(key,defaultValue: Response());
+    Response result = box!.get(key,defaultValue: Response());
 
     result.fetching = true;
     result.error = {};
@@ -167,7 +167,7 @@ class Persistor{
   }
 
    Future<void> end(String key)async{
-    Response result = box.get(key,defaultValue: Response());
+    Response result = box!.get(key,defaultValue: Response());
 
     result.fetching = false;
 
@@ -175,16 +175,16 @@ class Persistor{
   }
 
   Future<void> complete(String key, {
-    bool success,
+    bool? success,
     dynamic data,
-    String rawData,
-    int statusCode
+    String? rawData,
+    int? statusCode
   })
   async
   {
 
   
-  Response result = box.get(key,defaultValue: Response());
+  Response result = box!.get(key,defaultValue: Response());
   result.success = success;
   
   if(success??false){
@@ -204,11 +204,11 @@ class Persistor{
   }
 
   write(String key, Response value) async {
-    await box.put(key, value);
+    await box!.put(key, value);
   }
 
   Response read(String key) {
-    Response result = box.get(key,defaultValue: Response());
+    Response result = box!.get(key,defaultValue: Response());
 
     if( result.data!=null && !(result.data is List))
     result.data = (result.data as Map).cast<String,dynamic>();
@@ -217,10 +217,10 @@ class Persistor{
   }
 
   Future<void> delete(String key) async {
-    return box.delete(key);
+    return box!.delete(key);
   }
 
   Future<int> deleteAll() async {
-    return box.clear();
+    return box!.clear();
   }
 }

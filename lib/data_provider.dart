@@ -23,18 +23,18 @@ class RESTListenableBuilder extends ValueListenableBuilder{
   // The RESTExecutor object for this builder
 
   RESTListenableBuilder({
-    this.executor,
-    RESTBuilder builder,
+    required this.executor,
+    RESTBuilder? builder,
     
     bool exact = false
     
-  }): super(valueListenable:executor.getListenable(exact),builder:(_,__,___)=>builder(executor.response));
+  }): super(valueListenable:executor.getListenable(exact),builder:(_,__,___)=>builder!(executor.response));
 }
 
 class RESTWidget extends RESTListenableBuilder{
   RESTWidget({
-    @required RESTExecutor executor,
-    @required RESTBuilder builder,
+    required RESTExecutor executor,
+    required RESTBuilder builder,
     bool exact =false
   }): super(executor: executor,builder:builder,exact:exact);
 }
@@ -42,25 +42,25 @@ class RESTWidget extends RESTListenableBuilder{
 class RESTExecutor{
   String method;
   String domain;
-  String label;
-  Map<String,dynamic> params;
+  String? label;
+  Map<String,dynamic>? params;
   List<String> identifiers;
-  Map<String,String> headers;
+  Map<String,String>? headers;
 
-  int cacheForSeconds;
-  int retryAfterSeconds;
-
-
-  ResponseCallback successCallback;
-  ResponseCallback errorCallback;
-
-  Persistor cache;
-
-  NetworkRequestMaker requestMaker;
+  int? cacheForSeconds;
+  int? retryAfterSeconds;
 
 
-  static Map<String,Domain> domains;
-  static Map<String,Set<String>> domainState;
+  ResponseCallback? successCallback;
+  ResponseCallback? errorCallback;
+
+  late Persistor cache;
+
+  late NetworkRequestMaker requestMaker;
+
+
+  static late Map<String,Domain> domains;
+  static late Map<String,Set<String>> domainState;
   
 
   static int cacheForSecondsAll = 60;
@@ -102,8 +102,8 @@ class RESTExecutor{
 
   RESTExecutor(
     {
-      @required this.domain,
-      @required this.label,
+      required this.domain,
+      required this.label,
       this.method = 'GET',
       this.params,
       this.identifiers = const [],
@@ -142,7 +142,7 @@ class RESTExecutor{
   }
 
   ValueListenable<Box<dynamic>> getListenable([bool exact=false]){
-    return cache.getBox().listenable(keys: exact?[getKey()]:null);
+    return cache.getBox()!.listenable(keys: exact?[getKey()]:null);
   }
 
   Response watch(BuildContext context,{bool exact = false}){
@@ -171,26 +171,26 @@ class RESTExecutor{
 
     if(
 
-      domains[domain].type==DomainType.network
+      domains[domain]!.type==DomainType.network
       &&
       method=='GET'
       &&
-      !cache.read(getKey()).fetching
+      !cache.read(getKey()).fetching!
       &&
       (
-      (!domainState[domain].contains(getKey()))
+      (!domainState[domain]!.contains(getKey()))
       
       ||
 
       (!cache.getFreshStatus(
         getKey(), 
-        cacheForSeconds??domains[domain].cacheForSeconds??RESTExecutor.cacheForSecondsAll,
-        retryAfterSeconds??domains[domain].retryAfterSeconds??RESTExecutor.retryAfterSecondsAll
+        cacheForSeconds??domains[domain]!.cacheForSeconds??RESTExecutor.cacheForSecondsAll,
+        retryAfterSeconds??domains[domain]!.retryAfterSeconds??RESTExecutor.retryAfterSecondsAll
         ))
       )
       ){
 
-        domainState[domain].add(getKey());
+        domainState[domain]!.add(getKey());
         execute();
     }
 
@@ -204,11 +204,11 @@ class RESTExecutor{
   }
 
    Future<Response> execute({
-    Map<String,dynamic> data,
-    bool mutation
+    Map<String,dynamic>? data,
+    bool? mutation
 
   }) async{
-    switch(domains[domain].type){
+    switch(domains[domain]!.type){
 
       case DomainType.network:
       return networkExecute(data,mutation);
@@ -221,27 +221,27 @@ class RESTExecutor{
     }
   }
 
-  Future<Response> basicExecute(Map<String,dynamic> data)async{
+  Future<Response> basicExecute(Map<String,dynamic>? data)async{
 
     if(data == null)
     await cache.end(getKey());
     else
     await cache.complete(getKey(), data: data, success: true);
 
-    if(successCallback!=null && response.success){
-      successCallback(cache.read(getKey()));
+    if(successCallback!=null && response.success!){
+      successCallback!(cache.read(getKey()));
     }
 
     return cache.read(getKey());
   }
 
-  Future<Response> networkExecute(Map<String,dynamic> data,bool mutation)async{
+  Future<Response> networkExecute(Map<String,dynamic>? data,bool? mutation)async{
     
     cache.start(getKey());
 
     NetworkResponse response = await requestMaker.execute(
 
-      path: domains[domain].path[label],
+      path: domains[domain]!.path![label!],
       query: params,
       identifiers: identifiers,
       data: data,
@@ -249,11 +249,11 @@ class RESTExecutor{
       headers: headers
     );
 
-    if(response.statusCode>=400){
+    if(response.statusCode!>=400){
     }
 
     try{
-      dynamic decoded = jsonDecode(response.data);
+      dynamic decoded = jsonDecode(response.data!);
 
       
     await cache.complete(getKey(),
@@ -273,11 +273,11 @@ class RESTExecutor{
 
     if(successCallback!=null && response.success){
 
-      successCallback(cache.read(getKey()));
+      successCallback!(cache.read(getKey()));
     }
 
     else if(errorCallback!=null && !response.success)
-      errorCallback(cache.read(getKey()));
+      errorCallback!(cache.read(getKey()));
 
 
     if(
@@ -294,9 +294,9 @@ class RESTExecutor{
       &&
       false// response.isAuthError
       &&
-      (domainState[domain].contains(getKey()))
+      (domainState[domain]!.contains(getKey()))
       ){
-        domainState[domain].remove(getKey());
+        domainState[domain]!.remove(getKey());
       }
 
 

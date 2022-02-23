@@ -16,15 +16,15 @@ class ResponseAdapter extends TypeAdapter<Response> {
       for (var i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Response(
-      success: fields[5] as bool,
-      fetching: fields[4] as bool,
+      success: fields[5] as bool?,
+      fetching: fields[4] as bool?,
     )
-      ..rawData = fields[0] as String
-      ..timeStamp = fields[1] as DateTime
+      ..rawData = fields[0] as String?
+      ..timeStamp = fields[1] as DateTime?
       // ..data = (fields[2] as Map)?.cast<String, dynamic>()
-      ..statusCode = fields[6] as int
+      ..statusCode = fields[6] as int?
       ..data = fields[2]
-      ..error = (fields[3] as Map)?.cast<String, dynamic>();
+      ..error = (fields[3] as Map?)?.cast<String, dynamic>();
   }
 
   @override
